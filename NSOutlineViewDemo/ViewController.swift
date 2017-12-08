@@ -8,7 +8,9 @@
 
 import Cocoa
 let PASTEBOARD_TYPE = "com.sb.demo"
-class ViewController: NSViewController, NSOutlineViewDataSource, NSOutlineViewDelegate {
+class ViewController: NSViewController, NSOutlineViewDataSource, NSOutlineViewDelegate,NSPasteboardItemDataProvider {
+
+    
 //    static let fileManager = FileManager()
 //    static let requiredAttributes: Set = [URLResourceKey.isDirectoryKey]
 //    static let options: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles,
@@ -29,7 +31,13 @@ class ViewController: NSViewController, NSOutlineViewDataSource, NSOutlineViewDe
         super.viewDidLoad()
 //        folderImage.size = NSSize(width: 28, height: 28)
 //        itemImage.size = NSSize(width: 28, height: 28)
+        
+        // Register for the dropped object types we can accept.
         outlineView.registerForDraggedTypes([NSPasteboard.PasteboardType(rawValue: PASTEBOARD_TYPE)])
+        // Disable dragging items from our view to other applications.
+        outlineView.setDraggingSourceOperationMask(NSDragOperation(), forLocal: false)
+        // Enable dragging items within and into our view.
+        outlineView.setDraggingSourceOperationMask(NSDragOperation.every, forLocal: true)
     }
     //NSOutlineViewDelegate
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
@@ -73,5 +81,28 @@ class ViewController: NSViewController, NSOutlineViewDataSource, NSOutlineViewDe
         return 34
     }
     //Mark: Drag & Drop
+    //此方法可以使剪切板起作用
+    func outlineView(_ outlineView: NSOutlineView, pasteboardWriterForItem item: Any) -> NSPasteboardWriting? {
+        let pbItem = NSPasteboardItem()
+        pbItem.setDataProvider(self, forTypes: [NSPasteboard.PasteboardType(rawValue: PASTEBOARD_TYPE)])
+        return pbItem
+    }
+    //此方法可以使Drop起作用
+    func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
+//        let canDrag = (index >= 0) && (item != nil)
+        if index >= 0 && item != nil {
+            return .move
+        }
+        return NSDragOperation()
+    }
+    func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
+//        let pb = info.draggingPasteboard()
+//        let name = pb.string(forType: NSPasteboard.PasteboardType(rawValue: PASTEBOARD_TYPE))
+        return true
+        
+    }
+    func pasteboard(_ pasteboard: NSPasteboard?, item: NSPasteboardItem, provideDataForType type: NSPasteboard.PasteboardType) {
+        
+    }
 }
 
